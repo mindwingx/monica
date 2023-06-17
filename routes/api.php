@@ -1,157 +1,171 @@
 <?php
 
+use App\Constants\Endpoints;
 use Illuminate\Support\Facades\Route;
 
-Route::apiResource('statistics', 'Statistics\\ApiStatisticsController', ['only' => ['index']])->name('index', 'api.statistics');
+//['ep'] is equal to 'EndPoint'
 
-Route::resource('compliance', 'Settings\\ApiComplianceController', ['only' => ['index', 'show']]);
+Route::apiResource(Endpoints::API_STATISTICS['ep']['crud'],Endpoints::API_STATISTICS['class'],['only' => ['index']])
+    ->name('index', Endpoints::API_STATISTICS['name']);
 
-Route::resource('currencies', 'Settings\\ApiCurrencyController', ['only' => ['index', 'show']])->name('index', 'api.currencies');
+Route::resource(Endpoints::API_COMPLIANCE['ep']['crud'], Endpoints::API_COMPLIANCE['class'], ['only' => ['index', 'show']]);
+
+Route::resource(Endpoints::API_CURRENCY['ep']['crud'], Endpoints::API_CURRENCY['class'], ['only' => ['index', 'show']])
+    ->name('index', Endpoints::API_CURRENCY['name']);
 
 Route::group(['middleware' => ['auth:api']], function () {
-    Route::get('/', 'ApiController@success')->name('api');
+    Route::get(Endpoints::API['ep']['success']['uri'], Endpoints::API['ep']['success']['action'])
+        ->name(Endpoints::API['name']);
+
     Route::name('api.')->group(function () {
         // Me
-        Route::get('/me', 'Account\\ApiUserController@show');
-        Route::get('/me/compliance', 'Account\\ApiUserController@getSignedPolicies');
-        Route::get('/me/compliance/{id}', 'Account\\ApiUserController@get');
-        Route::post('/me/compliance', 'Account\\ApiUserController@set');
+        Route::get(Endpoints::API_USER['ep']['me']['uri'], Endpoints::API_USER['ep']['me']['action']);
+        Route::get(Endpoints::API_USER['ep']['compliance']['uri'], Endpoints::API_USER['ep']['compliance']['action']);
+        Route::get(Endpoints::API_USER['ep']['compliance_by_id']['uri'], Endpoints::API_USER['ep']['compliance_by_id']['action']);
+        Route::post(Endpoints::API_USER['ep']['set_compliance']['uri'], Endpoints::API_USER['ep']['set_compliance']['action']);
 
         // Contacts
-        Route::apiResource('contacts', 'ApiContactController')
-            ->names(['index' => 'contacts', 'show' => 'contact']);
-        Route::post('/me/contact', 'ApiMeController@store');
-        Route::delete('/me/contact', 'ApiMeController@destroy');
+        Route::apiResource(Endpoints::API_CONTACT['ep']['crud'], Endpoints::API_CONTACT['class'])
+            ->names(Endpoints::API_CONTACT['name']);
+
+        Route::post(Endpoints::API_ME['ep']['create_contact']['uri'], Endpoints::API_ME['ep']['create_contact']['action']);
+        Route::delete(Endpoints::API_ME['ep']['delete_contact']['uri'], Endpoints::API_ME['ep']['delete_contact']['action']);
 
         // Contacts properties
-        Route::put('/contacts/{contact}/work', 'ApiContactController@updateWork');
-        Route::put('/contacts/{contact}/food', 'ApiContactController@updateFoodPreferences');
-        Route::put('/contacts/{contact}/introduction', 'ApiContactController@updateIntroduction');
+        Route::put(Endpoints::API_CONTACT['ep']['work']['uri'], Endpoints::API_CONTACT['ep']['work']['action']);
+        Route::put(Endpoints::API_CONTACT['ep']['food']['uri'], Endpoints::API_CONTACT['ep']['food']['action']);
+        Route::put(Endpoints::API_CONTACT['ep']['introduction']['uri'], Endpoints::API_CONTACT['ep']['introduction']['action']);
 
         // Genders
-        Route::apiResource('genders', 'Account\\ApiGenderController');
+        Route::apiResource(Endpoints::API_GENDER['ep']['crud'], Endpoints::API_GENDER['class']);
 
         // Relationships
-        Route::apiResource('relationships', 'ApiRelationshipController', ['except' => ['index']])
-            ->names(['show' => 'relationship']);
-        Route::get('/contacts/{contact}/relationships', 'ApiRelationshipController@index')
-            ->name('relationships');
+        Route::apiResource(Endpoints::API_RELATIONSHIP['ep']['crud'], Endpoints::API_RELATIONSHIP['class'], ['except' => ['index']])
+            ->names(Endpoints::API_RELATIONSHIP['name']['crud']);
+
+        Route::get(Endpoints::API_RELATIONSHIP['ep']['by_contact']['uri'], Endpoints::API_RELATIONSHIP['ep']['by_contact']['action'])
+            ->name(Endpoints::API_RELATIONSHIP['name']['index']);
 
         // Sets tags
-        Route::post('/contacts/{contact}/setTags', 'ApiContactTagController@setTags');
-        Route::post('/contacts/{contact}/unsetTags', 'ApiContactTagController@unsetTags');
-        Route::post('/contacts/{contact}/unsetTag', 'ApiContactTagController@unsetTag');
+        Route::post(Endpoints::API_CONTACT_TAG['ep']['set_tags']['uri'], Endpoints::API_CONTACT_TAG['ep']['set_tags']['action']);
+        Route::post(Endpoints::API_CONTACT_TAG['ep']['unset_tags']['uri'], Endpoints::API_CONTACT_TAG['ep']['unset_tags']['action']);
+        Route::post(Endpoints::API_CONTACT_TAG['ep']['unset_tag']['uri'], Endpoints::API_CONTACT_TAG['ep']['unset_tag']['action']);
 
         // Places
-        Route::apiResource('places', 'Account\\ApiPlaceController');
+        Route::apiResource(Endpoints::API_PLACE['ep']['crud'], Endpoints::API_PLACE['class']);
 
         // Addresses
-        Route::apiResource('addresses', 'Contact\\ApiAddressController')
-            ->names(['index' => 'addresses', 'show' => 'address']);
-        Route::get('/contacts/{contact}/addresses', 'Contact\\ApiAddressController@addresses');
+        Route::apiResource(Endpoints::API_ADDRESS['ep']['crud'], Endpoints::API_ADDRESS['class'])
+            ->names(Endpoints::API_ADDRESS['name']);
+
+        Route::get(Endpoints::API_ADDRESS['ep']['addresses']['uri'], Endpoints::API_ADDRESS['ep']['addresses']['action']);
 
         // Contact Fields
-        Route::apiResource('contactfields', 'ApiContactFieldController', ['except' => ['index']]);
-        Route::get('/contacts/{contact}/contactfields', 'ApiContactFieldController@contactFields');
+        Route::apiResource(Endpoints::API_CONTACT_FIELD['ep']['crud'], Endpoints::API_CONTACT_FIELD['class'], ['except' => ['index']]);
+        Route::get(Endpoints::API_CONTACT_FIELD['ep']['contactfields']['uri'], Endpoints::API_CONTACT_FIELD['ep']['contactfields']['action']);
 
         // Pets
-        Route::apiResource('pets', 'ApiPetController');
-        Route::get('/contacts/{contact}/pets', 'ApiPetController@pets');
+        Route::apiResource(Endpoints::API_PET['ep']['crud'], Endpoints::API_PET['class']);
+        Route::get(Endpoints::API_PET['ep']['pets']['uri'], Endpoints::API_PET['ep']['pets']['action']);
 
         // Tags
-        Route::apiResource('tags', 'ApiTagController');
-        Route::get('/tags/{tag}/contacts', 'ApiTagController@contacts');
+        Route::apiResource(Endpoints::API_TAG['ep']['crud'], Endpoints::API_TAG['class']);
+        Route::get(Endpoints::API_TAG['ep']['contacts']['uri'], Endpoints::API_TAG['ep']['contacts']['action']);
 
         // Companies
-        Route::apiResource('companies', 'Account\\ApiCompanyController');
+        Route::apiResource(Endpoints::API_COMPANY['ep']['crud'], Endpoints::API_COMPANY['class']);
 
         // Occupations
-        Route::apiResource('occupations', 'Contact\\ApiOccupationController');
+        Route::apiResource(Endpoints::API_OCCUPATION['ep']['crud'], Endpoints::API_OCCUPATION['class']);
 
         // Notes
-        Route::apiResource('notes', 'ApiNoteController')
-            ->names(['index' => 'notes', 'show' => 'note']);
-        Route::get('/contacts/{contact}/notes', 'ApiNoteController@notes');
+        Route::apiResource(Endpoints::API_NOTE['ep']['crud'], Endpoints::API_NOTE['class'])
+            ->names(Endpoints::API_NOTE['name']);
+
+        Route::get(Endpoints::API_NOTE['ep']['notes']['uri'], Endpoints::API_NOTE['ep']['notes']['action']);
 
         // Calls
-        Route::apiResource('calls', 'Contact\\ApiCallController')
-            ->names(['index' => 'calls', 'show' => 'call']);
-        Route::get('/contacts/{contact}/calls', 'Contact\\ApiCallController@calls');
+        Route::apiResource(Endpoints::API_CALL['ep']['crud'], Endpoints::API_CALL['class'])
+            ->names(Endpoints::API_CALL['name']);
+        Route::get(Endpoints::API_CALL['ep']['calls']['uri'], Endpoints::API_CALL['ep']['calls']['action']);
 
-        // Conversations & messages
-        Route::apiResource('conversations', 'Contact\\ApiConversationController')
-            ->names(['index' => 'conversations', 'show' => 'conversation']);
-        Route::apiResource('conversations/{conversation}/messages', 'Contact\\ApiMessageController', ['except' => ['index', 'show']]);
-        Route::get('/contacts/{contact}/conversations', 'Contact\\ApiConversationController@conversations');
+        // Conversations
+        Route::apiResource(Endpoints::API_CONVERSATION['ep']['crud'], Endpoints::API_CONVERSATION['class'])
+            ->names(Endpoints::API_CONVERSATION['name']);
+        Route::get(Endpoints::API_CONVERSATION['ep']['conversations']['uri'], Endpoints::API_CONVERSATION['ep']['conversations']['action']);
+
+        // Messages
+        Route::apiResource(Endpoints::API_MESSAGE['ep']['crud'], Endpoints::API_MESSAGE['class'], ['except' => ['index', 'show']]);
 
         // Activities
-        Route::apiResource('activities', 'ApiActivitiesController')
-            ->names(['index' => 'activities', 'show' => 'activity']);
-        Route::get('/contacts/{contact}/activities', 'ApiActivitiesController@activities');
+        Route::apiResource(Endpoints::API_ACTIVITY['ep']['crud'], Endpoints::API_ACTIVITY['class'])
+            ->names(Endpoints::API_ACTIVITY['name']);
+        Route::get(Endpoints::API_ACTIVITY['ep']['activities']['uri'], Endpoints::API_ACTIVITY['ep']['activities']['action']);
 
         // Reminders
-        Route::get('reminders/upcoming/{month}', 'ApiReminderController@upcoming');
-        Route::apiResource('reminders', 'ApiReminderController')
-            ->names(['index' => 'reminders']);
-        Route::get('/contacts/{contact}/reminders', 'ApiReminderController@reminders');
+        Route::apiResource(Endpoints::API_REMINDER['ep']['crud'], Endpoints::API_REMINDER['class'])
+            ->names(Endpoints::API_REMINDER['name']);
+        Route::get(Endpoints::API_REMINDER['ep']['upcoming']['uri'], Endpoints::API_REMINDER['ep']['upcoming']['action']);
+        Route::get(Endpoints::API_REMINDER['ep']['reminders']['uri'], Endpoints::API_REMINDER['ep']['reminders']['action']);
 
         // Tasks
-        Route::apiResource('tasks', 'ApiTaskController');
-        Route::get('/contacts/{contact}/tasks', 'ApiTaskController@tasks');
+        Route::apiResource(Endpoints::API_TASK['ep']['crud'], Endpoints::API_TASK['class']);
+        Route::get(Endpoints::API_TASK['ep']['tasks']['uri'], Endpoints::API_TASK['ep']['tasks']['action']);
 
         // Gifts
-        Route::apiResource('gifts', 'ApiGiftController');
-        Route::get('/contacts/{contact}/gifts', 'ApiGiftController@gifts');
-        Route::put('/gifts/{gift}/photo/{photo}', 'ApiGiftController@associate');
+        Route::apiResource(Endpoints::API_GIFT['ep']['crud'], Endpoints::API_GIFT['class']);
+        Route::get(Endpoints::API_GIFT['ep']['gifts']['uri'], Endpoints::API_GIFT['ep']['gifts']['action']);
+        Route::put(Endpoints::API_GIFT['ep']['photo']['uri'], Endpoints::API_GIFT['ep']['photo']['action']);
 
         // Debts
-        Route::apiResource('debts', 'ApiDebtController');
-        Route::get('/contacts/{contact}/debts', 'ApiDebtController@debts');
+        Route::apiResource(Endpoints::API_DEBT['ep']['crud'], Endpoints::API_DEBT['class']);
+        Route::get(Endpoints::API_DEBT['ep']['debts']['uri'], Endpoints::API_DEBT['ep']['debts']['action']);
 
         // Journal
-        Route::apiResource('journal', 'ApiJournalController')
-            ->names(['index' => 'journal', 'show' => 'entry']);
+        Route::apiResource(Endpoints::API_JOURNAL['ep']['crud'], Endpoints::API_JOURNAL['class'])
+            ->names(Endpoints::API_JOURNAL['name']);
 
         // Activity Types
-        Route::apiResource('activitytypes', 'Account\\Activity\\ApiActivityTypeController');
+        Route::apiResource(Endpoints::API_ACTIVITY_TYPES['ep']['crud'], Endpoints::API_ACTIVITY_TYPES['class']);
 
         // Activity Type Categories
-        Route::apiResource('activitytypecategories', 'Account\\Activity\\ApiActivityTypeCategoryController');
+        Route::apiResource(Endpoints::API_ACTIVITY_TYPE_CATEGORY['ep']['crud'], Endpoints::API_ACTIVITY_TYPE_CATEGORY['class']);
 
         // Relationship Type Groups
-        Route::apiResource('relationshiptypegroups', 'ApiRelationshipTypeGroupController', ['only' => ['index', 'show']]);
+        Route::apiResource(Endpoints::API_RELATIONSHIP_TYPE_GROUP['ep']['crud'], Endpoints::API_RELATIONSHIP_TYPE_GROUP['class'], ['only' => ['index', 'show']]);
 
         // Relationship Types
-        Route::apiResource('relationshiptypes', 'ApiRelationshipTypeController', ['only' => ['index', 'show']]);
+        Route::apiResource(Endpoints::API_RELATIONSHIP_TYPE['ep']['crud'], Endpoints::API_RELATIONSHIP_TYPE['class'], ['only' => ['index', 'show']]);
 
         // Life events
-        Route::apiResource('lifeevents', 'Contact\\ApiLifeEventController');
+        Route::apiResource(Endpoints::API_LIFE_EVENT['ep']['crud'], Endpoints::API_LIFE_EVENT['class']);
 
         // Documents
-        Route::apiResource('documents', 'Contact\\ApiDocumentController', ['except' => ['update']])
-            ->names(['index' => 'documents', 'show' => 'document']);
-        Route::get('/contacts/{contact}/documents', 'Contact\\ApiDocumentController@contact');
+        Route::apiResource(Endpoints::API_DOCUMENT['ep']['crud'], Endpoints::API_DOCUMENT['class'], ['except' => ['update']])
+            ->names(Endpoints::API_DOCUMENT['name']);
+        Route::get(Endpoints::API_DOCUMENT['ep']['documents']['uri'], Endpoints::API_DOCUMENT['ep']['documents']['action']);
 
         // Photos
-        Route::apiResource('photos', 'Contact\\ApiPhotoController', ['except' => ['update']])
-            ->names(['index' => 'photos', 'show' => 'photo']);
-        Route::get('/contacts/{contact}/photos', 'Contact\\ApiPhotoController@contact');
+        Route::apiResource(Endpoints::API_PHOTO['ep']['crud'], Endpoints::API_PHOTO['class'], ['except' => ['update']])
+            ->names(Endpoints::API_PHOTO['name']);
+        Route::get(Endpoints::API_PHOTO['ep']['photos']['uri'], Endpoints::API_PHOTO['ep']['photos']['action']);
 
         // Avatars
-        Route::put('/contacts/{contact}/avatar', 'Contact\\ApiAvatarController@update');
+        Route::put(Endpoints::API_AVATAR['ep']['avatar']['uri'], Endpoints::API_AVATAR['ep']['avatar']['action']);
 
         // Contact logs
-        Route::get('/contacts/{contact}/logs', 'Contact\\ApiAuditLogController@index');
+        Route::get(Endpoints::API_LOG['ep']['logs']['uri'], Endpoints::API_LOG['ep']['logs']['action']);
 
         /*
          * SETTINGS
          */
-        Route::apiResource('contactfieldtypes', 'Settings\\ApiContactFieldTypeController');
-        Route::apiResource('logs', 'Settings\\ApiAuditLogController');
+        Route::apiResource(Endpoints::API_CONTACT_FIELD_TYPE['ep']['crud'], Endpoints::API_CONTACT_FIELD_TYPE['class']);
+        Route::apiResource(Endpoints::API_LOG_SETTING['ep']['crud'], Endpoints::API_LOG_SETTING['class']);
 
         /*
          * MISC
          */
-        Route::get('/countries', 'Misc\\ApiCountryController@index')->name('countries');
+        Route::get(Endpoints::API_COUNTRIES['ep']['countries']['uri'], Endpoints::API_COUNTRIES['ep']['countries']['action'])
+            ->name( Endpoints::API_COUNTRIES['name']);
     });
 });
